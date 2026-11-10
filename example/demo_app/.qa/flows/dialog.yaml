@@ -1,0 +1,14 @@
+name: Dialog writes its value back
+tags: [dialog]
+---
+- launchApp
+- runFlow: ../subflows/login.yaml
+- tapOn:
+    id: go_dialog
+- tapOn:
+    id: open_dialog
+- assertVisible: Enter a value
+- inputText: hello
+- tapOn: OK
+- assertVisible: hello
+- takeScreenshot: dialog-done

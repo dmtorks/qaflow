@@ -1,0 +1,5 @@
+name: Fails on purpose
+tags: [failing]
+---
+- launchApp
+- assertVisible: This text does not exist

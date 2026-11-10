@@ -1,0 +1,12 @@
+name: The login layout follows the orientation
+tags: [mobile]
+---
+- launchApp
+# A device left in landscape by an earlier session would fail the first check.
+- setOrientation: PORTRAIT
+- assertVisible: Portrait layout
+- setOrientation: LANDSCAPE
+- assertVisible: Landscape layout
+- takeScreenshot: landscape
+- setOrientation: PORTRAIT
+- assertVisible: Portrait layout

@@ -1,0 +1,11 @@
+name: qaflow_workspace
+publish_to: none
+environment:
+  sdk: ^3.12.0
+workspace:
+  - packages/qaflow_protocol
+  - packages/qaflow_agent
+  - packages/qaflow
+  - example/demo_app
+dev_dependencies:
+  flutter_lints: ^6.0.0

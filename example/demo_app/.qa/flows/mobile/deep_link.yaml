@@ -1,0 +1,11 @@
+name: A deep link opens an item
+tags: [mobile]
+---
+- launchApp
+# iOS asks "Open in Demo App?" before a custom-scheme link reaches the app, and the agent cannot tap system alerts.
+- runFlow:
+    when:
+      platform: android
+    commands:
+      - openLink: demo://app/item/42
+      - assertVisible: Item 42 details

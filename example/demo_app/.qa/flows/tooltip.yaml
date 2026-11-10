@@ -1,0 +1,12 @@
+name: The dialog button shows its tooltip on hover
+tags: [dialog, desktop]
+---
+- launchApp
+- runFlow: ../subflows/login.yaml
+- tapOn:
+    id: go_dialog
+- hover:
+    id: open_dialog
+- assertVisible:
+    text: Opens a dialog
+    type: Text

@@ -178,7 +178,7 @@ void main() {
     );
   });
 
-  // The mirror's hover rule (qaflow_studio inspect_state.dart elementAtPoint):
+  // The hover rule QAFlow Studio's element picker applies (elementAtPoint):
   // the smallest visible interactive rect under the point, the outer node on
   // a tie.
   QaNode? mirrorPick(List<QaNode> nodes, Offset p) {

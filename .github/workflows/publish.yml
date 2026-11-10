@@ -1,0 +1,101 @@
+name: Publish to pub.dev
+
+# Each tag publishes one package through pub.dev automated publishing (OIDC,
+# no stored credentials). tool/release.dart prints the tags and tool/publish.md
+# describes the whole process, including the one-time pub.dev setup.
+#
+# Publish order: qaflow_protocol first, then qaflow_agent and qaflow. Tag pushes
+# run as separate, concurrent workflow runs, so nothing here enforces the
+# order. qaflow_agent and qaflow depend on qaflow_protocol ^<version>, and
+# pub.dev validates that against what is already published, so push their tags
+# only after https://pub.dev/packages/qaflow_protocol shows the new version.
+#
+# Each tag pattern must match the one set on the package's pub.dev admin page
+# (qaflow_protocol-v{{version}}, qaflow_agent-v{{version}}, qaflow-v{{version}}).
+
+on:
+  push:
+    tags: ['qaflow_protocol-v*', 'qaflow_agent-v*', 'qaflow-v*']
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Check the tag against the package
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      package: ${{ steps.check.outputs.package }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Match the tag to a package and its version
+        id: check
+        run: |
+          tag="$GITHUB_REF_NAME"
+          # qaflow_protocol- and qaflow_agent- come first: qaflow-v* would not
+          # match them anyway, but the order keeps the intent plain.
+          case "$tag" in
+            qaflow_protocol-v*) package=qaflow_protocol ;;
+            qaflow_agent-v*) package=qaflow_agent ;;
+            qaflow-v*) package=qaflow ;;
+            *) echo "::error::Tag $tag does not name a published package."; exit 1 ;;
+          esac
+          tag_version="${tag#"$package"-v}"
+          pubspec="packages/$package/pubspec.yaml"
+          pubspec_version="$(sed -n 's/^version:[[:space:]]*\([^[:space:]#]*\).*/\1/p' "$pubspec" | head -n 1)"
+          if [ "$tag_version" != "$pubspec_version" ]; then
+            echo "::error::Tag $tag is version $tag_version, but $pubspec has version $pubspec_version. Delete the tag, then tag the commit that has the bump (dart run tool/release.dart)."
+            exit 1
+          fi
+          changelog="packages/$package/CHANGELOG.md"
+          if ! grep -Eq "^## ${tag_version//./\\.}([[:space:]]|$)" "$changelog"; then
+            echo "::error::$changelog has no '## $tag_version' entry."
+            exit 1
+          fi
+          if grep -qF -- '- Describe the changes in this release.' "$changelog"; then
+            echo "::error::$changelog still has the placeholder bullet from tool/release.dart. Write the release notes first."
+            exit 1
+          fi
+          echo "package=$package" >> "$GITHUB_OUTPUT"
+          echo "Publishing $package $tag_version"
+
+  # One job publishes all three. pub.dev's reusable workflow
+  # (dart-lang/setup-dart/.github/workflows/publish.yml) is the documented
+  # route for pure Dart packages, but it can't be used here: every package is
+  # a member of the root pub workspace, `dart pub get` in any member resolves
+  # the whole workspace, and that includes Flutter packages (qaflow_agent,
+  # example/demo_app). A Dart SDK without Flutter stops with
+  # "Because qaflow_agent requires the Flutter SDK, version solving failed",
+  # for qaflow_protocol too. So every package publishes with Flutter's dart.
+  #
+  # setup-dart runs first because it is what configures the pub.dev OIDC
+  # credentials (it fetches the GitHub token and registers it with
+  # `dart pub token add`). flutter-action then puts Flutter's dart first on
+  # PATH, and that dart publishes with the same credentials.
+  publish:
+    name: Publish ${{ needs.check.outputs.package }}
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        working-directory: packages/${{ needs.check.outputs.package }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: dart-lang/setup-dart@v1
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.5
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      - run: dart pub publish --force

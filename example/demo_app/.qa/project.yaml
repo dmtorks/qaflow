@@ -1,0 +1,6 @@
+# Settings for `qa test` and QAFlow Studio. Paths are relative to example/demo_app.
+app:
+  source: .
+flows:
+  folders: [.qa/flows]
+  excludeTags: [mobile]

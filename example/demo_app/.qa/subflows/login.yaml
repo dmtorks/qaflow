@@ -1,0 +1,12 @@
+name: Log in
+env:
+  USERNAME: alice
+  PASSWORD: secret
+---
+- tapOn:
+    id: username
+- inputText: ${USERNAME}
+- tapOn:
+    id: password
+- inputText: ${PASSWORD}
+- pressKey: enter

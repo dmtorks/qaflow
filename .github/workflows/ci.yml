@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Format, analyze and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.5
+          channel: stable
+          cache: true
+
+      # The JUnit reporter test validates its output with xmllint and skips
+      # itself when the tool is missing.
+      - name: Install xmllint
+        run: command -v xmllint || (sudo apt-get update && sudo apt-get install -y libxml2-utils)
+
+      - run: flutter pub get
+
+      - name: Format
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: qaflow_protocol tests
+        run: dart test
+        working-directory: packages/qaflow_protocol
+
+      - name: qaflow tests
+        run: dart test
+        working-directory: packages/qaflow
+
+      - name: qaflow_agent tests
+        run: flutter test --timeout 60s
+        working-directory: packages/qaflow_agent
+
+      - name: demo_app tests
+        run: flutter test
+        working-directory: example/demo_app

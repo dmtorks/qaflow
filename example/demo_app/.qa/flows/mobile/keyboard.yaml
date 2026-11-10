@@ -1,0 +1,15 @@
+name: hideKeyboard dismisses the keyboard
+tags: [mobile]
+---
+- launchApp
+- tapOn:
+    id: username
+- inputText: alice
+- hideKeyboard
+- takeScreenshot: keyboard-hidden
+- tapOn:
+    id: password
+- inputText: secret
+- hideKeyboard
+- assertVisible:
+    id: login

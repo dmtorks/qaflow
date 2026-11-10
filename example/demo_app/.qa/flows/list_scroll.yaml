@@ -1,0 +1,11 @@
+name: Scroll to a late item and tap it
+tags: [list]
+---
+- launchApp
+- runFlow: ../subflows/login.yaml
+- assertVisible: Items
+- scrollUntilVisible:
+    element: Item 150
+- tapOn: Item 150
+- assertVisible: Tapped Item 150
+- takeScreenshot: item-150
