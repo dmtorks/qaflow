@@ -1,0 +1,5 @@
+# The repo's lint rules for a pure Dart package, and its formatter width, so
+# pub.dev analyses and formats this package the same way.
+include: package:lints/recommended.yaml
+formatter:
+  page_width: 120

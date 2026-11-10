@@ -33,13 +33,14 @@ refuses to install in release mode.
 
 ## Packages
 
-| Package | What it is | You add it to |
-|---|---|---|
-| [`qaflow_agent`](https://pub.dev/packages/qaflow_agent) | The in-app agent (Flutter) | The app under test |
-| [`qaflow`](https://pub.dev/packages/qaflow) | The engine and the `qa` command (also installed as `qaflow`); pure Dart | Your machine, or the app's `dev_dependencies` |
-| [`qaflow_protocol`](https://pub.dev/packages/qaflow_protocol) | Wire types shared by the two; pure Dart | Nothing: the others pull it in |
+| Package | What it is | You add it to | Source |
+|---|---|---|---|
+| [`qaflow_agent`](https://pub.dev/packages/qaflow_agent) | The in-app agent (Flutter) | The app under test | [`packages/qaflow_agent`](packages/qaflow_agent) |
+| [`qaflow`](https://pub.dev/packages/qaflow) | The engine and the `qa` command (also installed as `qaflow`); pure Dart | Your machine, or the app's `dev_dependencies` | [`packages/qaflow`](packages/qaflow) |
+| [`qaflow_protocol`](https://pub.dev/packages/qaflow_protocol) | Wire types shared by the two; pure Dart | Nothing: the others pull it in | [`packages/qaflow_protocol`](packages/qaflow_protocol) |
 
-The three packages share one version. QAFlow is built and tested with
+The source folders hold each package exactly as it is published on pub.dev;
+see [packages/README.md](packages/README.md). The three packages share one version. QAFlow is built and tested with
 Flutter 3.47 (the packages need Dart 3.12 or later).
 
 ## Install

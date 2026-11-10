@@ -1,0 +1,7 @@
+# Matches the repo analysis setup so pub.dev lints and formats this package the same way.
+include: package:flutter_lints/flutter.yaml
+formatter:
+  page_width: 120
+analyzer:
+  exclude:
+    - build/**
