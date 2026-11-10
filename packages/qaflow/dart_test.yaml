@@ -1,0 +1,10 @@
+tags:
+  # Builds and drives a real app window, so it runs only on demand.
+  integration:
+    skip: 'Builds and drives a real app; run with dart test -P integration'
+
+presets:
+  # dart test -P integration test/remote_integration_test.dart
+  integration:
+    include_tags: integration
+    run_skipped: true
