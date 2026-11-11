@@ -1,3 +1,7 @@
+## 0.1.4 - 2026-11-11
+
+- The README points to the qaflow README for subflows.
+
 ## 0.1.3 - 2026-11-10
 
 - Expands the README: requirements, the separate `lib/main_qa.dart` entrypoint, sharing setup code with

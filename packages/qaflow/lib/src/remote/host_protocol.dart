@@ -7,7 +7,7 @@ import '../device/device.dart';
 const hostProtocolVersion = 1;
 
 /// This package's version, reported by `hello`. Kept in step with pubspec.yaml by a test.
-const qaVersion = '0.1.3';
+const qaVersion = '0.1.4';
 
 /// Why the host refused a `hello` from a client on another protocol version.
 String protocolMismatchMessage({required int host, required int client}) =>
