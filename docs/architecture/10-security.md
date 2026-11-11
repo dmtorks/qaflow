@@ -90,7 +90,7 @@ A `qa host` (chapter 11) launches programs on one machine for a client on anothe
 
 - Keep `lib/main_qa.dart` out of release build configurations (the default with `flutter build`).
 - Declare passwords and tokens as **secrets**, never as `flows.env` values.
-- Pin the toolkit with a git tag or commit (chapter 8.1) so test machines run reviewed code.
+- Pin the toolkit with a git tag or commit ([Integration and CI](../integration.md)) so test machines run reviewed code.
 - Run tests on machines you control. Prebuilt apps expose an unauthenticated local VM service during a run.
 - Keep `qa-out/` out of version control, and review run folders before attaching them to bug reports.
 - In CI, pass secrets from the CI system's secret store with `--env`. Don't echo them.
