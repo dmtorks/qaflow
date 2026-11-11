@@ -39,8 +39,7 @@ refuses to install in release mode.
 | [`qaflow`](https://pub.dev/packages/qaflow) | The engine and the `qa` command (also installed as `qaflow`); pure Dart | Your machine, or the app's `dev_dependencies` | [`packages/qaflow`](packages/qaflow) |
 | [`qaflow_protocol`](https://pub.dev/packages/qaflow_protocol) | Wire types shared by the two; pure Dart | Nothing: the others pull it in | [`packages/qaflow_protocol`](packages/qaflow_protocol) |
 
-The source folders hold each package exactly as it is published on pub.dev;
-see [packages/README.md](packages/README.md). The three packages share one version. QAFlow is built and tested with
+The three packages share one version. QAFlow is built and tested with
 Flutter 3.47 (the packages need Dart 3.12 or later).
 
 ## Install
@@ -241,7 +240,28 @@ installed. It isn't publicly available yet.
   step, and running flows in CI.
 - [Troubleshooting](docs/troubleshooting.md): messages, causes and fixes.
 - [Remote hosts](docs/remote-hosts.md): setting up and using `qa host`.
+- [Architecture](docs/architecture/README.md): how QAFlow works inside, for
+  contributors.
 - [Changelog](CHANGELOG.md).
+
+## Developing QAFlow
+
+This repository is a pub workspace with the three packages and
+`example/demo_app`, the app the end-to-end flows drive. With Flutter 3.47:
+
+```sh
+flutter pub get
+dart format --output=none --set-exit-if-changed .
+flutter analyze
+(cd packages/qaflow_protocol && dart test)
+(cd packages/qaflow && dart test)
+(cd packages/qaflow_agent && flutter test --timeout 60s)
+(cd example/demo_app && flutter test)
+dart run qaflow:qa test --config example/demo_app/.qa/project.yaml   # the demo app's flows on macOS
+```
+
+The [architecture guide](docs/architecture/README.md) explains how it all
+works, file by file. [tool/publish.md](tool/publish.md) covers releases.
 
 ## Reporting issues
 

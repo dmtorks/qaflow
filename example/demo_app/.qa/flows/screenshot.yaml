@@ -1,0 +1,20 @@
+name: Screens match their baselines
+tags: [screenshot]
+---
+- launchApp
+- runFlow: ../subflows/login.yaml
+- assertVisible: Items
+- assertScreenshot:
+    name: list
+    ignore:
+      - text: Item 0
+- tapOn:
+    id: go_dialog
+- tapOn:
+    id: open_dialog
+- assertVisible: Enter a value
+# The text field's cursor blinks, so it is left out of the comparison.
+- assertScreenshot:
+    name: dialog-open
+    ignore:
+      - type: TextField

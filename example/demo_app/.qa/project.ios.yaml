@@ -1,0 +1,10 @@
+# The demo app on an iOS simulator. Run from the workspace root:
+#   dart run qaflow:qa test --config example/demo_app/.qa/project.ios.yaml
+# CI passes --device for the simulator its runner image has.
+name: demo_app
+app:
+  source: .
+  device: ios:iPhone 17 Pro
+flows:
+  folders: [.qa/flows, .qa/flows/mobile]
+  excludeTags: [desktop]

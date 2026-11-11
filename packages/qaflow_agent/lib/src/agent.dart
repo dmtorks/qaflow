@@ -10,8 +10,17 @@ import 'package:qaflow_protocol/qaflow_protocol.dart';
 import 'handlers.dart';
 import 'screenshot.dart';
 
-/// Entry point for the app under test. Use only from a dedicated QA
-/// entrypoint such as lib/main_qa.dart so release builds never include it.
+/// The QAFlow agent for the app under test.
+///
+/// Use it only from a dedicated QA entrypoint, `lib/main_qa.dart`, so the
+/// `lib/main.dart` that release builds compile never imports it:
+///
+/// ```dart
+/// void main() {
+///   QaAgent.install(onReset: resetAppState);
+///   runApp(QaAgent.wrap(const MyApp()));
+/// }
+/// ```
 class QaAgent {
   static bool _installed = false;
 
@@ -24,6 +33,16 @@ class QaAgent {
   /// [install]; settable directly in tests.
   static FutureOr<void> Function()? onReset;
 
+  /// Registers the `ext.qa.*` service extensions the QAFlow driver calls.
+  ///
+  /// Call it once in `lib/main_qa.dart`, before `runApp`. Later calls only
+  /// replace [onReset] when one is given.
+  ///
+  /// [onReset] wipes the app's persisted state (preferences, databases,
+  /// secure storage) when a flow uses `clearState`; the runner restarts the
+  /// app after it completes. Without it, `clearState` fails.
+  ///
+  /// Throws a [StateError] in release builds, which have no VM service.
   static void install({FutureOr<void> Function()? onReset}) {
     if (kReleaseMode) {
       throw StateError('qaflow_agent must not be compiled into release builds');
@@ -39,10 +58,17 @@ class QaAgent {
     }
   }
 
-  /// Wraps the app in the RepaintBoundary that screenshots capture.
+  /// Wraps [app] in the RepaintBoundary that screenshots capture.
+  ///
+  /// Use it around the widget passed to `runApp`. Without it,
+  /// `takeScreenshot` and `assertScreenshot` fail.
   static Widget wrap(Widget app) => RepaintBoundary(key: Screenshot.boundaryKey, child: app);
 
-  /// Decodes [rawArgs], dispatches, and encodes a QaResponse. Never throws.
+  /// Runs one agent [method] with JSON-encoded [rawArgs] and returns the
+  /// JSON-encoded QaResponse, as the service extension would. Never throws.
+  ///
+  /// The registered extensions call this. Apps don't need it; it is public
+  /// so widget tests can drive the agent without a VM service.
   static Future<String> handle(QaMethod method, String? rawArgs) async {
     Map<String, Object?> args;
     try {

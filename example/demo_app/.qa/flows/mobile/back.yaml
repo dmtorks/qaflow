@@ -1,0 +1,17 @@
+name: System back returns to the previous screen
+tags: [mobile]
+---
+- launchApp
+- runFlow:
+    when:
+      platform: android
+    commands:
+      - runFlow: ../../subflows/login.yaml
+      - tapOn:
+          id: go_dialog
+      - assertVisible:
+          id: open_dialog
+      - back
+      - assertNotVisible:
+          id: open_dialog
+      - assertVisible: Items

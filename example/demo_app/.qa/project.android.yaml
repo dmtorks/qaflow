@@ -1,0 +1,10 @@
+# The demo app on an Android emulator. Run from the workspace root:
+#   dart run qaflow:qa test --config example/demo_app/.qa/project.android.yaml
+# CI passes --device android:emulator-5554 for the emulator its job starts.
+name: demo_app
+app:
+  source: .
+  device: android:qa_pixel_baklava
+flows:
+  folders: [.qa/flows, .qa/flows/mobile]
+  excludeTags: [desktop]

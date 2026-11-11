@@ -1,6 +1,6 @@
 name: qaflow_agent
 description: In-app agent for QAFlow that exposes ext.qa.* VM service extensions so flows can drive a Flutter app.
-version: 0.1.2
+version: 0.1.3
 homepage: https://github.com/dmtorks/qaflow
 repository: https://github.com/dmtorks/qaflow/tree/main/packages/qaflow_agent
 issue_tracker: https://github.com/dmtorks/qaflow/issues
@@ -22,7 +22,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  qaflow_protocol: ^0.1.2
+  qaflow_protocol: ^0.1.3
 dev_dependencies:
   flutter_test:
     sdk: flutter

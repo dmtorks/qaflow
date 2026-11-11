@@ -1,0 +1,14 @@
+name: A swipe scrolls the list
+tags: [mobile, list]
+---
+- launchApp
+- runFlow: ../../subflows/login.yaml
+- assertVisible: Items
+- repeat:
+    while:
+      notVisible: Item 40
+    commands:
+      - swipe:
+          direction: UP
+- tapOn: Item 40
+- assertVisible: Tapped Item 40

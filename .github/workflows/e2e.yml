@@ -1,0 +1,180 @@
+name: End-to-end
+
+# Drives real app windows: the demo app's flows on macOS, the same flows on an
+# iOS simulator, and on an Android emulator in a Linux job. Run on demand only
+# for now; add push and pull_request triggers once the runs are reliable.
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    name: Demo app flows on macOS and an iOS simulator
+    runs-on: macos-15
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.5
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      # Builds the demo app once, so the flows below spend their time
+      # testing rather than compiling inside a launch timeout.
+      - name: Build the demo app
+        run: flutter build macos --debug -t lib/main_qa.dart
+        working-directory: example/demo_app
+
+      # Screenshot baselines recorded here land in *-ci key folders, kept with
+      # the reports below, so they can be reviewed and committed before CI
+      # switches to --baselines strict.
+      - name: Demo app flows
+        env:
+          QA_BASELINE_KEY_SUFFIX: ci
+        run: dart run qaflow:qa test --config example/demo_app/.qa/project.yaml --out qa-out/demo --baselines record
+
+      # The runner image's simulators change over time; take the newest iPhone.
+      - name: Pick an iOS simulator
+        id: sim
+        run: |
+          udid=$(xcrun simctl list devices available -j | python3 -c "
+          import json, sys
+          devices = json.load(sys.stdin)['devices']
+          ios = sorted((k for k in devices if '.iOS-' in k), key=lambda k: [int(x) for x in k.split('iOS-')[1].split('-')], reverse=True)
+          print(next(d['udid'] for k in ios for d in devices[k] if d['name'].startswith('iPhone')))
+          ")
+          echo "udid=$udid" >> "$GITHUB_OUTPUT"
+
+      # A cold boot on the hosted runner takes minutes and leaves the
+      # simulator slow for a while; booting it before the build gives it that
+      # time, so flutter run later starts on a settled device.
+      - name: Boot the iOS simulator
+        run: |
+          xcrun simctl boot "${{ steps.sim.outputs.udid }}" || true
+          xcrun simctl bootstatus "${{ steps.sim.outputs.udid }}" -b
+
+      # A cold first simulator build would otherwise eat qa's app-start timeout.
+      - name: Build the demo app for the iOS simulator
+        run: flutter build ios --simulator --debug -t lib/main_qa.dart
+        working-directory: example/demo_app
+
+      # --verbose prints flutter run's output, so a stalled launch shows why.
+      - name: Demo app flows on an iOS simulator
+        env:
+          QA_IOS_BOOT_TIMEOUT: '600'
+          QA_BASELINE_KEY_SUFFIX: ci
+        run: dart run qaflow:qa test --config example/demo_app/.qa/project.ios.yaml --device "ios:${{ steps.sim.outputs.udid }}" --out qa-out/demo-ios --verbose --baselines record
+
+      - name: Keep the reports and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-runs
+          path: |
+            qa-out/
+            example/demo_app/.qa/baselines/*-ci/
+          # The paths sit under .qa/, which upload-artifact skips by default.
+          include-hidden-files: true
+          if-no-files-found: ignore
+
+  android:
+    name: Demo app flows on an Android emulator
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      # The runner's disk cannot hold the Gradle cache, the APK build and the
+      # emulator system image at once; drop preinstalled toolchains this job
+      # never uses.
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/share/swift \
+            /usr/local/share/boost /usr/local/share/powershell /opt/hostedtoolcache/CodeQL
+          df -h /
+
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.5
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      # The first Gradle build is slow enough to exceed qa's app-start timeout
+      # if it happened inside the flow run; it needs no emulator.
+      - name: Build the demo app APK
+        run: flutter build apk --debug -t lib/main_qa.dart
+        working-directory: example/demo_app
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Cache the AVD
+        uses: actions/cache@v4
+        id: avd
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-api34-google_apis-x86_64
+
+      - name: Create the AVD snapshot
+        if: steps.avd.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: echo "AVD snapshot created"
+
+      # The action boots the emulator; qa reuses it by its serial. It cold
+      # boots (-no-snapshot): restoring the cached snapshot left the
+      # software-GL emulator with broken colour buffers and a zero-size app
+      # window, and the first tap froze.
+      - name: Demo app flows on an Android emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        env:
+          QA_ANDROID_BOOT_TIMEOUT: '600'
+          QA_BASELINE_KEY_SUFFIX: ci
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: dart run qaflow:qa test --config example/demo_app/.qa/project.android.yaml --device android:emulator-5554 --out qa-out/demo-android --baselines record
+
+      - name: Keep the reports and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-android-runs
+          path: |
+            qa-out/
+            example/demo_app/.qa/baselines/*-ci/
+          # The paths sit under .qa/, which upload-artifact skips by default.
+          include-hidden-files: true
+          if-no-files-found: ignore
