@@ -226,7 +226,7 @@ Each suggestion shows its match count, and a best suggestion that isn't unique i
 
 **Why per device key.** Each machine type gets its own set and they never fight over one image. An OS upgrade starts a new set rather than failing every comparison.
 
-**Cost.** Baselines are tens to hundreds of KB each in git. Two Macs on the same macOS version share `macos-27.0` even if one has a different screen scale, which shows up as a size mismatch (chapter 9). A renamed flow file moves its baselines. QAFlow Studio has no baseline-management screen; it shows comparisons and **Accept as baseline** in run detail.
+**Cost.** Baselines are tens to hundreds of KB each in git. Two Macs on the same macOS version share `macos-27.0` even if one has a different screen scale, which shows up as a size mismatch ([Troubleshooting](../troubleshooting.md)). A renamed flow file moves its baselines. QAFlow Studio has no baseline-management screen; it shows comparisons and **Accept as baseline** in run detail.
 
 ## D19. Editor suggestions driven by a schema checked against the parser
 

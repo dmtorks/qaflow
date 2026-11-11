@@ -286,47 +286,7 @@ sequenceDiagram
 
 ## 11.7 Configuring a client
 
-### `project.yaml`
-
-```yaml
-app:
-  source: .                  # a path on the host, relative to host.project
-host:
-  url: ws://127.0.0.1:7777   # default; the local end of the SSH tunnel
-  project: C:\src\myapp      # the folder on the host that contains .qa/; required
-```
-
-`RemoteHostConfig` ([project_config.dart](../../packages/qaflow/lib/src/config/project_config.dart)) holds `url` and `project`. The parser ([project_file.dart](../../packages/qaflow/lib/src/config/project_file.dart)):
-
-- requires `project`, non-blank (`host needs project, the project folder on the host`);
-- accepts a `ws://` or `wss://` URL with a host name (`the host url must look like ws://127.0.0.1:7777`). `qa host` itself serves plain `ws://` only; the SSH tunnel provides the encryption;
-- refuses a `token:` key (`the host token is never read from the project file; set QA_HOST_TOKEN instead`);
-- keeps `app.source` and `app.binary` **as written**, since they are host paths, and doesn't check that they exist locally. The host checks them at `app.start`;
-- skips the device and flavor checks for an unset device, since this machine's desktop says nothing about the host's. The session checks again after `hello`.
-
-### CLI flags
-
-`qa test`, `qa smoke` and `qa ping` take:
-
-| Flag | Effect |
-|---|---|
-| `--host <url>` | Use this host, overriding the file's URL |
-| `--host-project <path>` | The project folder on the host. Alone, it uses the file's URL or the default `ws://127.0.0.1:7777` |
-| `--host none` | Run on this machine even when the file names a host; paths are resolved locally again |
-
-`--host` with no project folder anywhere, a bad URL, and `--host none --host-project` are usage errors (exit 64). With a host, `--project` and `--binary` are passed on as host paths, unresolved. The token always comes from `QA_HOST_TOKEN`. A host run with no project file has no local app root, so screenshot baselines are not used.
-
-### Example
-
-```sh
-# on the client, in one terminal
-ssh -N -L 7777:127.0.0.1:7777 me@qa-windows
-
-# in another
-export QA_HOST_TOKEN=<the token qa host printed>
-dart run qaflow:qa test --config path/to/app/.qa/project.yaml \
-    --host ws://127.0.0.1:7777 --host-project 'C:\src\myapp'
-```
+The `host:` section of `project.yaml`, the `--host` and `--host-project` flags, `QA_HOST_TOKEN` and the rules for host paths are in the user guide, [Remote hosts](../remote-hosts.md#use-it-from-the-client). The parsing lives in `ProjectFile` ([project_file.dart](../../packages/qaflow/lib/src/config/project_file.dart)) and `bin/qa.dart`.
 
 ## 11.8 What changes for a run on a host
 
@@ -344,35 +304,7 @@ dart run qaflow:qa test --config path/to/app/.qa/project.yaml \
 
 ## 11.9 Setting up a host on a cloud Windows machine
 
-This is the setup the design targets; `qa host` prints the Windows notes below when it starts on Windows.
-
-**On the host:**
-
-1. Install what a local run would need there: the Flutter SDK with its Windows desktop toolchain (what `flutter doctor` asks for), a checkout of this workspace (to run `qa`), and a checkout of the app with `qaflow_agent` as a dependency (chapter 8.1). For Android, also the Android SDK and an AVD.
-2. Enable **OpenSSH Server**, so the client can open a tunnel.
-3. Connect with **Remote Desktop** and open a terminal **inside that desktop session**. Start the host from the workspace root:
-
-   ```
-   dart run qaflow:qa host
-   ```
-
-   Don't start it from an SSH session: apps started from there run without a desktop, so a Windows desktop app has no window to render.
-4. Keep the desktop rendering. Flutter stops producing frames when its window can't be shown (chapter 1.4.7), and every input step then answers `not_ready`. Keep the RDP window open (minimised is fine), or, before disconnecting, run `tscon %sessionname% /dest:console` to move the session to the console so it keeps a display.
-5. Copy the token it prints. It is saved in `%USERPROFILE%\.qa\host-token`; delete that file and restart `qa host` to rotate it.
-
-**On the client:**
-
-1. Open the tunnel: `ssh -N -L 7777:127.0.0.1:7777 <user>@<host>`.
-2. Give the token to `qa` (`QA_HOST_TOKEN`) or to QAFlow Studio (Settings → Remote hosts).
-3. Point the project at the host: a `host:` block in `project.yaml`, `--host`/`--host-project`, or Run on in QAFlow Studio's Project settings.
-4. Check it with `qa ping --host ws://127.0.0.1:7777 --host-project <path>`, which launches the app on the host, pings the agent and saves one screenshot locally.
-
-**Mobile devices on a Windows host:**
-
-- **Android emulators** need hardware virtualization inside the VM: the cloud machine must offer nested virtualization, and the emulator uses the Windows Hypervisor Platform (WHPX).
-- **iOS simulators are not available on Windows.** They need a macOS host; `devices.list` on Windows reports `iOS simulators need macOS`.
-
-Process cleanup on Windows uses `taskkill /T` (chapter 2.1), so stopping an app stops `flutter run` and the app together.
+Step by step, including OpenSSH on Windows and the tunnel from a Mac, in the user guide: [Remote hosts → Windows hosts](../remote-hosts.md#windows-hosts).
 
 ## 11.10 Tests
 

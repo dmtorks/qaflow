@@ -23,7 +23,7 @@ flowchart LR
   builder --> html["report.html"]
 ```
 
-Everything downstream of the runner consumes one **event stream**. The CLI prints it, the results builder folds it into reports, and QAFlow Studio animates it live. Paths in this chapter are relative to `packages/qaflow/lib/src/` unless they say otherwise. For a file-by-file index, see [chapter 12](12-code-map.md); for every command's options, see [chapter 7](07-command-reference.md).
+Everything downstream of the runner consumes one **event stream**. The CLI prints it, the results builder folds it into reports, and QAFlow Studio animates it live. Paths in this chapter are relative to `packages/qaflow/lib/src/` unless they say otherwise. For a file-by-file index, see [chapter 12](12-code-map.md); for every command's options, see the [command reference](../commands.md).
 
 | Concern | Code |
 |---|---|
@@ -74,7 +74,7 @@ onFlowComplete:                          # optional hook, always runs after
 
 ### Commands
 
-The parser accepts exactly the 27 names in `FlowParser.commandNames`. Chapter 7.1 gives every option and default.
+The parser accepts exactly the 27 names in `FlowParser.commandNames`. The [command reference](../commands.md#flow-commands) gives every option and default.
 
 | Command | Purpose |
 |---|---|
@@ -308,7 +308,7 @@ Reports are still written. `optional: true` doesn't soften an infrastructure err
 
 ### Stopping
 
-`stop()` sets a flag that is checked **between** steps, so the step in flight finishes and the rest are skipped. `TestRun.stop()` called a second time also stops the session, killing the step in flight. While the device is still booting, the first `stop()` already stops the session, which cancels the boot wait (the device itself keeps booting); a stop that lands as the device becomes ready still keeps the app from launching. That is the "Force stop" button in QAFlow Studio, and Ctrl+C under `qa test` (which stops twice at once, see chapter 7.6). A stopped run reports "stopped by the user", even if killing the app caused a connection error.
+`stop()` sets a flag that is checked **between** steps, so the step in flight finishes and the rest are skipped. `TestRun.stop()` called a second time also stops the session, killing the step in flight. While the device is still booting, the first `stop()` already stops the session, which cancels the boot wait (the device itself keeps booting); a stop that lands as the device becomes ready still keeps the app from launching. That is the "Force stop" button in QAFlow Studio, and Ctrl+C under `qa test` (which stops twice at once, see the [command reference](../commands.md#the-qa-command-line-tool)). A stopped run reports "stopped by the user", even if killing the app caused a connection error.
 
 ### What the executor does, command by command
 

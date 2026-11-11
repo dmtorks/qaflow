@@ -1,3 +1,7 @@
+## 0.1.4 - 2026-11-11
+
+- Version bump to match qaflow 0.1.4. No changes.
+
 ## 0.1.3 - 2026-11-10
 
 - Version bump to match qaflow_agent 0.1.3. No changes.

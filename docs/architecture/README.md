@@ -20,9 +20,9 @@ This folder explains how it all works and why it's built this way. The [project 
 | 4. QAFlow Studio | Documented with the desktop app, in its own repository. The numbering is kept so chapter references stay stable |
 | [5. Design decisions](05-design-decisions.md) | Each major choice, its alternatives and its trade-offs; known limitations |
 | [6. Testing strategy](06-testing.md) | Unit, widget and end-to-end tests, plus CI |
-| [7. Command reference](07-command-reference.md) | Every flow command with options, defaults and examples; selectors; key names; the `qa` CLI; QAFlow Studio shortcuts |
-| [8. Integrating and extending](08-integration-and-how-to.md) | Testing your own app, CI, remote hosts, adding flow commands and protocol methods |
-| [9. Troubleshooting](09-troubleshooting.md) | Error messages and symptoms, their causes and fixes |
+| 7. Command reference | Moved to the user guide: [Command reference](../commands.md), every flow command, selector, key name and `qa` option |
+| [8. Extending QAFlow](08-integration-and-how-to.md) | The repository's workflows, adding a flow command or a protocol method, running the end-to-end tests. Using QAFlow in your app is in [Integration and CI](../integration.md) |
+| 9. Troubleshooting | Moved to the user guide: [Troubleshooting](../troubleshooting.md), messages and symptoms with their causes and fixes |
 | [10. Security model](10-security.md) | What's protected, what isn't, and a checklist for teams |
 | [11. Remote hosts](11-remote-hosts.md) | `qa host`, its JSON-RPC protocol, the VM service proxy, tokens and tunnels, Studio's host support |
 | [12. Code map](12-code-map.md) | Every source file in this repository and what it does |
@@ -92,7 +92,7 @@ The rule that **`qaflow` never imports Flutter** is what lets the same engine ru
 
 ### How people get it
 
-- **The packages** are on pub.dev and share one version. They depend on each other with caret constraints (`qaflow_protocol: ^0.1.3`); inside this repository the pub workspace (`resolution: workspace`) resolves those to the local copies. An app adds `flutter pub add qaflow_agent` and a `lib/main_qa.dart`, and the CLI comes from `dart pub global activate qaflow` ([chapter 8](08-integration-and-how-to.md)). Releases are tagged here and published by GitHub Actions ([`tool/publish.md`](../../tool/publish.md)).
+- **The packages** are on pub.dev and share one version. They depend on each other with caret constraints (`qaflow_protocol: ^0.1.4`); inside this repository the pub workspace (`resolution: workspace`) resolves those to the local copies. An app adds `flutter pub add qaflow_agent` and a `lib/main_qa.dart`, and the CLI comes from `dart pub global activate qaflow` ([Integration and CI](../integration.md)). Releases are tagged here and published by GitHub Actions ([`tool/publish.md`](../../tool/publish.md)).
 - **QAFlow Studio**, the macOS desktop app, is built on `qaflow` in a separate repository and ships as its own download.
 - **Names that stayed.** The rename to QAFlow kept the user-facing `qa` names: the `qa` command, the `.qa/` folder, `lib/main_qa.dart`, the `ext.qa.*` extensions, `QA_HOST_TOKEN`, `qa host`, and `QA_STUDIO_SETTINGS_DIR`. Public Dart types keep their names too (`QaAgent`, `QaDriver`, `QaSession`).
 
@@ -223,9 +223,9 @@ The device layer talks to the native tools, not `flutter emulators`, because the
 
 | Feature | What it does | Read more |
 |---|---|---|
-| Flow language | Maestro-style YAML: a header (`name`, `tags`, `env`, `onFlowStart`, `onFlowComplete`), `---`, then commands. Unsupported Maestro commands are parse errors, not silent no-ops. | [3](03-flows-and-reports.md), [7](07-command-reference.md) |
-| Commands | `launchApp`, `stopApp`, `clearState`, `tapOn`, `doubleTapOn`, `longPressOn`, `hover`, `inputText`, `eraseText`, `setText`, `pressKey`, `assertVisible`, `assertNotVisible`, `extendedWaitUntil`, `waitForAnimationToEnd`, `scroll`, `scrollUntilVisible`, `swipe`, `takeScreenshot`, `assertScreenshot`, `runFlow`, `repeat`, and the mobile `back`, `hideKeyboard`, `setOrientation`, `openLink`. Every step takes `label` and `optional`. | [7](07-command-reference.md) |
-| Selectors | `text` (literal or full-match regex), `id` (ValueKey or Semantics identifier), `type`, `index`, `enabled`, `childOf` (any ancestor). | [7](07-command-reference.md) |
+| Flow language | Maestro-style YAML: a header (`name`, `tags`, `env`, `onFlowStart`, `onFlowComplete`), `---`, then commands. Unsupported Maestro commands are parse errors, not silent no-ops. | [3](03-flows-and-reports.md), [Commands](../commands.md) |
+| Commands | `launchApp`, `stopApp`, `clearState`, `tapOn`, `doubleTapOn`, `longPressOn`, `hover`, `inputText`, `eraseText`, `setText`, `pressKey`, `assertVisible`, `assertNotVisible`, `extendedWaitUntil`, `waitForAnimationToEnd`, `scroll`, `scrollUntilVisible`, `swipe`, `takeScreenshot`, `assertScreenshot`, `runFlow`, `repeat`, and the mobile `back`, `hideKeyboard`, `setOrientation`, `openLink`. Every step takes `label` and `optional`. | [Commands](../commands.md) |
+| Selectors | `text` (literal or full-match regex), `id` (ValueKey or Semantics identifier), `type`, `index`, `enabled`, `childOf` (any ancestor). | [Commands](../commands.md) |
 | Variables, env and secrets | `${NAME}` from the innermost `runFlow` env, `--env`/project env, then the flow header. Secrets are declared by name in `project.yaml`; values come from the environment or Studio's settings. | [3](03-flows-and-reports.md), [10](10-security.md) |
 | Subflows | `runFlow` runs a file (relative to the caller) or inline commands, with its own `env` and an optional `when`. | [3](03-flows-and-reports.md) |
 | Repeat and conditions | `repeat` with `times` or `while`; `when`/`while` take `visible`, `notVisible`, `platform` and `true` (a substituted `true`/`false`). | [3](03-flows-and-reports.md) |
@@ -247,14 +247,14 @@ The device layer talks to the native tools, not `flutter emulators`, because the
 |---|---|---|
 | Screenshot assertions | `assertScreenshot` compares with a per-device baseline; `record`, `strict` and `update` modes; `ignore` areas; diff images. | [3](03-flows-and-reports.md) |
 | Reports | Each run folder holds `results.json` (schema 1, with a `device` object), `junit.xml` with screenshot attachments, and a static `report.html`. | [3](03-flows-and-reports.md) |
-| Failure artifacts | Failure screenshot, element snapshot and app log tail for every failed step. | [3](03-flows-and-reports.md), [9](09-troubleshooting.md) |
+| Failure artifacts | Failure screenshot, element snapshot and app log tail for every failed step. | [3](03-flows-and-reports.md), [Troubleshooting](../troubleshooting.md) |
 
 ### The `qa` CLI
 
 | Command | What it does | Read more |
 |---|---|---|
-| `qa validate` | Parses flows and the project file, printing `path:line:col: message`. | [7](07-command-reference.md) |
-| `qa test` | Runs flows and writes reports; exit 0, 1 or 64. | [7](07-command-reference.md) |
+| `qa validate` | Parses flows and the project file, printing `path:line:col: message`. | [Commands](../commands.md) |
+| `qa test` | Runs flows and writes reports; exit 0, 1 or 64. | [Commands](../commands.md) |
 | `qa ping`, `qa smoke` | Launch and check the agent; run the demo app's built-in smoke scenario. | [2](02-driver-launch-and-cli.md) |
 | `qa host` | Serves this machine to one remote client. | [11](11-remote-hosts.md) |
 
@@ -262,7 +262,7 @@ The device layer talks to the native tools, not `flutter emulators`, because the
 
 | Feature | What it does | Read more |
 |---|---|---|
-| CI | `ci.yml` formats, analyzes and tests every package; `e2e.yml` runs the demo flows on macOS, an iOS simulator and an Android emulator, plus QAFlow Studio's self-test flows. | [6](06-testing.md), [8](08-integration-and-how-to.md) |
+| CI | `ci.yml` formats, analyzes and tests every package; `e2e.yml` runs the demo flows on macOS, an iOS simulator and an Android emulator, on demand; `publish.yml` publishes a package when its tag is pushed. | [6](06-testing.md), [8](08-integration-and-how-to.md) |
 | Self-testing | QAFlow Studio is driven by `qa` through its own `lib/main_qa.dart`. | [6](06-testing.md) |
 
 ## Glossary
@@ -302,5 +302,5 @@ The device layer talks to the native tools, not `flutter emulators`, because the
 | Support a device | [`qaflow/lib/src/device/`](../../packages/qaflow/lib/src/device/) |
 | Change the remote host | [`qaflow/lib/src/remote/`](../../packages/qaflow/lib/src/remote/) |
 | Change what reports contain | [`qaflow/lib/src/report/`](../../packages/qaflow/lib/src/report/) |
-| Test your own app | [Chapter 8](08-integration-and-how-to.md) |
-| Understand an error | [Chapter 9](09-troubleshooting.md) |
+| Test your own app | [Integration and CI](../integration.md) |
+| Understand an error | [Troubleshooting](../troubleshooting.md) |

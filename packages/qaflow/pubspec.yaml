@@ -1,6 +1,6 @@
 name: qaflow
 description: QAFlow engine and the qa CLI. Launch a Flutter app, run YAML flows, take screenshots and compare baselines.
-version: 0.1.3
+version: 0.1.4
 homepage: https://github.com/dmtorks/qaflow
 repository: https://github.com/dmtorks/qaflow/tree/main/packages/qaflow
 issue_tracker: https://github.com/dmtorks/qaflow/issues
@@ -16,7 +16,7 @@ dependencies:
   args: ^2.7.0
   image: ^4.10.1
   path: ^1.9.1
-  qaflow_protocol: ^0.1.3
+  qaflow_protocol: ^0.1.4
   vm_service: ^15.0.2
   yaml: ^3.1.3
 dev_dependencies:
