@@ -160,7 +160,8 @@ name: Log in
 qa test
 ```
 
-The [qaflow README](https://pub.dev/packages/qaflow) covers `project.yaml`, devices and reports.
+The [qaflow README](https://pub.dev/packages/qaflow) covers `project.yaml`, devices, reports, and
+subflows, which let several flows share steps such as logging in.
 
 ## Troubleshooting
 
