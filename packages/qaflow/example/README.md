@@ -28,6 +28,34 @@ tags: [dialog]
 - takeScreenshot: dialog-done
 ```
 
+Shared steps go in a subflow outside the flow folders, so it only runs when a flow calls it.
+`.qa/subflows/login.yaml`:
+
+```yaml
+name: Log in
+env:
+  USERNAME: alice
+  PASSWORD: secret
+---
+- tapOn: {id: username}
+- inputText: ${USERNAME}
+- tapOn: {id: password}
+- inputText: ${PASSWORD}
+- pressKey: enter
+```
+
+`.qa/flows/login_wrong_password.yaml` runs it with a different password:
+
+```yaml
+name: Wrong password shows an error
+---
+- launchApp
+- runFlow:
+    file: ../subflows/login.yaml
+    env: {PASSWORD: wrong}
+- assertVisible: Wrong password
+```
+
 Commands, run from the app's folder:
 
 ```sh
